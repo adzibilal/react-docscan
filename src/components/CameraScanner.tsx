@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCamera } from '../hooks/useCamera';
+import { usePolygonEditor } from '../hooks/usePolygonEditor';
 import { DocumentScanner as DocScanner } from '../lib/document-scanner';
 import type { Point } from '../types/opencv';
 
@@ -18,6 +19,14 @@ export default function CameraScanner() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
   const detectionIntervalRef = useRef<number | undefined>(undefined);
+
+  // Polygon editor for adjusting detected points
+  const { hoveredPointIndex, isDragging } = usePolygonEditor({
+    points: detectedPoints,
+    canvasRef,
+    imageRef,
+    onPointsChange: setDetectedPoints
+  });
 
   // Listen for OpenCV ready event
   useEffect(() => {
@@ -194,7 +203,7 @@ export default function CameraScanner() {
     }
   }, [liveDetection, isActive, cvReady]);
 
-  // Draw detected polygon on captured image
+  // Draw detected polygon on captured image with interactive editing
   useEffect(() => {
     if (capturedImage && detectedPoints.length === 4 && canvasRef.current && imageRef.current) {
       const canvas = canvasRef.current;
@@ -218,21 +227,50 @@ export default function CameraScanner() {
         ctx.closePath();
         ctx.stroke();
 
-        // Draw corner points
-        ctx.fillStyle = '#ff0000';
+        // Draw corner points with hover/drag states
         detectedPoints.forEach((point, index) => {
+          const isHovered = hoveredPointIndex === index;
+          const radius = isHovered ? 12 : 8;
+          
+          // Draw outer glow for hovered point
+          if (isHovered) {
+            ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, radius + 6, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+          
+          // Draw main point
+          ctx.fillStyle = isHovered ? '#ffff00' : '#ff0000';
           ctx.beginPath();
-          ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+          ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
           ctx.fill();
           
+          // Draw white border
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          
+          // Draw number label
           ctx.fillStyle = '#ffffff';
-          ctx.font = '16px Arial';
-          ctx.fillText(`${index + 1}`, point.x - 5, point.y + 5);
-          ctx.fillStyle = '#ff0000';
+          ctx.font = isHovered ? 'bold 18px Arial' : '16px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${index + 1}`, point.x, point.y);
         });
+        
+        // Draw instruction text if not dragging
+        if (!isDragging && hoveredPointIndex === null) {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(10, 10, 280, 40);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '14px Arial';
+          ctx.textAlign = 'left';
+          ctx.fillText('💡 Drag titik merah untuk adjust', 20, 30);
+        }
       }
     }
-  }, [capturedImage, detectedPoints]);
+  }, [capturedImage, detectedPoints, hoveredPointIndex, isDragging]);
 
   const handleStartCamera = async () => {
     await startCamera();
@@ -438,6 +476,10 @@ export default function CameraScanner() {
                   <canvas
                     ref={canvasRef}
                     className="w-full h-auto rounded-lg border-2 border-gray-300"
+                    style={{ 
+                      cursor: isDragging ? 'grabbing' : hoveredPointIndex !== null ? 'grab' : 'default',
+                      touchAction: 'none'
+                    }}
                   />
                 )}
               </div>
