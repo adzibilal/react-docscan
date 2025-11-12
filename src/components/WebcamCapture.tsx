@@ -26,6 +26,7 @@ export const WebcamCapture = () => {
   const setError = useAppStore((state) => state.setError);
   const setProcessing = useAppStore((state) => state.setProcessing);
   const opencvReady = useAppStore((state) => state.opencvReady);
+  const reset = useAppStore((state) => state.reset);
 
   // Get video element ref from webcam
   useEffect(() => {
@@ -200,8 +201,9 @@ export const WebcamCapture = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
-      <div className="relative w-full max-w-3xl aspect-video bg-gray-900 rounded-lg overflow-hidden">
+    <div className="fixed inset-0 w-screen h-screen bg-black z-50">
+      {/* Full screen camera view */}
+      <div className="relative w-full h-full">
         <Webcam
           ref={webcamRef}
           audio={false}
@@ -220,9 +222,9 @@ export const WebcamCapture = () => {
           className="absolute top-0 left-0 w-full h-full pointer-events-none"
         />
         
-        {/* Document detected indicator */}
+        {/* Document detected indicator - Floating */}
         {detectedEdges && (
-          <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg flex items-center gap-2 animate-pulse">
+          <div className="absolute top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-green-500/90 backdrop-blur-sm text-white rounded-full shadow-2xl flex items-center gap-2 animate-pulse">
             <svg
               className="w-5 h-5"
               fill="currentColor"
@@ -234,15 +236,37 @@ export const WebcamCapture = () => {
                 clipRule="evenodd"
               />
             </svg>
-            <span className="font-semibold">Document Detected</span>
+            <span className="font-semibold text-sm">Document Detected</span>
           </div>
         )}
         
-        {/* Camera switch button */}
+        {/* Close button - Floating */}
+        <button
+          onClick={() => reset()}
+          className="absolute top-6 left-6 p-4 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white rounded-full transition-all shadow-2xl active:scale-95"
+          title="Close camera"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
+        {/* Camera switch button - Floating */}
         {hasMultipleCameras && (
           <button
             onClick={toggleCamera}
-            className="absolute top-4 right-4 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+            className="absolute top-6 right-6 p-4 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white rounded-full transition-all shadow-2xl active:scale-95"
             title="Switch camera"
           >
             <svg
@@ -261,41 +285,43 @@ export const WebcamCapture = () => {
             </svg>
           </button>
         )}
-      </div>
-
-      {/* Capture button */}
-      <button
-        onClick={captureImage}
-        className={`px-8 py-4 font-semibold rounded-lg transition-all shadow-lg ${
-          detectedEdges
-            ? 'bg-green-600 hover:bg-green-700 animate-pulse'
-            : 'bg-blue-600 hover:bg-blue-700'
-        } text-white`}
-      >
-        <div className="flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        
+        {/* Capture button - Floating at bottom */}
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+          <button
+            onClick={captureImage}
+            className={`px-10 py-5 font-bold rounded-full transition-all shadow-2xl backdrop-blur-sm text-white text-lg active:scale-95 ${
+              detectedEdges
+                ? 'bg-green-600/90 hover:bg-green-700/90 animate-pulse'
+                : 'bg-blue-600/90 hover:bg-blue-700/90'
+            }`}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          {detectedEdges ? 'Capture Document' : 'Capture Photo'}
+            <div className="flex items-center gap-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-7 w-7"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              {detectedEdges ? 'Capture Document' : 'Capture Photo'}
+            </div>
+          </button>
         </div>
-      </button>
+      </div>
     </div>
   );
 };
