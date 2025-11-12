@@ -417,13 +417,13 @@ export default function CameraScanner() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="relative bg-black rounded-lg overflow-hidden w-full" style={{ aspectRatio: '4/3' }}>
+                <div className="relative bg-black rounded-lg overflow-hidden w-full">
                   <video
                     ref={videoRef}
                     autoPlay
                     playsInline
                     muted
-                    className="w-full h-full object-cover"
+                    className="w-full h-auto block"
                   />
                   <canvas
                     ref={overlayCanvasRef}
