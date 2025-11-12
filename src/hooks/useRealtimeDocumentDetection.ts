@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import type { DetectedEdges } from '../types/index';
 
 interface UseRealtimeDocumentDetectionOptions {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   enabled: boolean;
   opencvReady: boolean;
 }
@@ -14,7 +14,7 @@ export const useRealtimeDocumentDetection = ({
 }: UseRealtimeDocumentDetectionOptions) => {
   const [detectedEdges, setDetectedEdges] = useState<DetectedEdges | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const lastProcessTimeRef = useRef<number>(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const scannerRef = useRef<any>(null);
@@ -22,8 +22,12 @@ export const useRealtimeDocumentDetection = ({
   // Initialize scanner instance once
   useEffect(() => {
     if (opencvReady && typeof window !== 'undefined' && window.jscanify) {
-      scannerRef.current = new window.jscanify();
-      console.log('jscanify scanner initialized for real-time detection');
+      try {
+        scannerRef.current = new window.jscanify();
+        console.log('jscanify scanner initialized for real-time detection');
+      } catch (error) {
+        console.error('Error initializing jscanify:', error);
+      }
     }
     return () => {
       scannerRef.current = null;

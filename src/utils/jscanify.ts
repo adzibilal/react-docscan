@@ -152,7 +152,6 @@ export const applyPerspectiveTransform = async (
       img.onload = () => {
         try {
           const scannerInstance = new window.jscanify();
-          
           // Calculate dimensions
           const widthTop = Math.sqrt(
             Math.pow(corners.topRight.x - corners.topLeft.x, 2) +

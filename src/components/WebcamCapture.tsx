@@ -4,7 +4,6 @@ import { useAppStore } from '../stores/useAppStore';
 import { getImageDimensions } from '../utils/imageProcessing';
 import { useRealtimeDocumentDetection } from '../hooks/useRealtimeDocumentDetection';
 import { applyPerspectiveTransform } from '../utils/jscanify';
-import type { DetectedEdges } from '../types';
 
 const videoConstraints = {
   width: 1280,
