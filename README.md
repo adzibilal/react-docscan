@@ -128,6 +128,8 @@ src/
 ### Edge Detection
 Uses **jscanify** library (powered by OpenCV.js) to automatically find document boundaries. The detected corners can be manually adjusted for precision.
 
+**Mobile Support:** Fully touch-enabled with larger touch targets (35px radius) and visual feedback when dragging corners. Works seamlessly on both desktop and mobile devices.
+
 ### Perspective Correction
 Uses **jscanify's** perspective transformation to straighten documents that are photographed at an angle, making them appear as if scanned from directly above.
 

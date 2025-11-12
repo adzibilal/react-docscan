@@ -17,6 +17,12 @@ export const EdgeDetection = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const [imageScale, setImageScale] = useState(1);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Reset image loaded state when image changes
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [originalImage]);
 
   // Detect edges when component mounts
   useEffect(() => {
@@ -71,15 +77,18 @@ export const EdgeDetection = () => {
     detectEdges();
   }, [originalImage, opencvReady, setDetectedEdges, setProcessing, setError]);
 
-  // Draw edges on canvas
+  // Draw edges on canvas (redraw when selectedCorner changes for visual feedback)
   useEffect(() => {
-    if (!edges || !canvasRef.current || !imageRef.current) return;
+    if (!edges || !canvasRef.current || !imageRef.current || !imageLoaded) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const img = imageRef.current;
 
-    if (!ctx) return;
+    if (!ctx || !img.naturalWidth || !img.naturalHeight) {
+      console.log('Canvas context or image dimensions not ready');
+      return;
+    }
 
     // Calculate scale to fit container
     const containerWidth = canvas.parentElement?.clientWidth || 800;
@@ -113,39 +122,51 @@ export const EdgeDetection = () => {
     ctx.closePath();
     ctx.stroke();
 
-    // Draw corner handles
-    const drawCorner = (corner: Corner, label: string) => {
+    // Draw corner handles (larger for mobile)
+    const drawCorner = (corner: Corner, label: string, cornerKey: keyof DetectedEdges) => {
+      const isSelected = selectedCorner === cornerKey;
+      const radius = isSelected ? 14 : 12; // Larger radius for better touch targets
+      
+      // Outer glow for selected corner
+      if (isSelected) {
+        ctx.beginPath();
+        ctx.arc(corner.x, corner.y, radius + 4, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+        ctx.fill();
+      }
+      
+      // Main circle
       ctx.beginPath();
-      ctx.arc(corner.x, corner.y, 8, 0, 2 * Math.PI);
-      ctx.fillStyle = '#3B82F6';
+      ctx.arc(corner.x, corner.y, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = isSelected ? '#2563EB' : '#3B82F6';
       ctx.fill();
       ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
       ctx.stroke();
 
       // Draw label
       ctx.fillStyle = '#1E40AF';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText(label, corner.x + 12, corner.y - 8);
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText(label, corner.x + 16, corner.y - 10);
     };
 
-    drawCorner(scaledEdges.topLeft, 'TL');
-    drawCorner(scaledEdges.topRight, 'TR');
-    drawCorner(scaledEdges.bottomRight, 'BR');
-    drawCorner(scaledEdges.bottomLeft, 'BL');
-  }, [edges]);
+    drawCorner(scaledEdges.topLeft, 'TL', 'topLeft');
+    drawCorner(scaledEdges.topRight, 'TR', 'topRight');
+    drawCorner(scaledEdges.bottomRight, 'BR', 'bottomRight');
+    drawCorner(scaledEdges.bottomLeft, 'BL', 'bottomLeft');
+  }, [edges, selectedCorner, imageLoaded]); // Redraw when image loaded or selected corner changes
 
-  // Handle corner dragging
-  const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+  // Handle corner selection (mouse & touch)
+  const handlePointerDown = useCallback((clientX: number, clientY: number) => {
     if (!edges || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / imageScale;
-    const y = (event.clientY - rect.top) / imageScale;
+    const x = (clientX - rect.left) / imageScale;
+    const y = (clientY - rect.top) / imageScale;
 
-    // Check which corner is clicked
-    const threshold = 20;
+    // Larger threshold for touch (finger is bigger than mouse cursor)
+    const threshold = 35;
     const corners: (keyof DetectedEdges)[] = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
     
     for (const cornerKey of corners) {
@@ -158,13 +179,14 @@ export const EdgeDetection = () => {
     }
   }, [edges, imageScale]);
 
-  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+  // Handle corner dragging (mouse & touch)
+  const handlePointerMove = useCallback((clientX: number, clientY: number) => {
     if (!selectedCorner || !edges || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / imageScale;
-    const y = (event.clientY - rect.top) / imageScale;
+    const x = (clientX - rect.left) / imageScale;
+    const y = (clientY - rect.top) / imageScale;
 
     setEdges({
       ...edges,
@@ -172,9 +194,45 @@ export const EdgeDetection = () => {
     });
   }, [selectedCorner, edges, imageScale]);
 
-  const handleMouseUp = useCallback(() => {
+  // Handle end of dragging
+  const handlePointerUp = useCallback(() => {
     setSelectedCorner(null);
   }, []);
+
+  // Mouse event handlers
+  const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    handlePointerDown(event.clientX, event.clientY);
+  }, [handlePointerDown]);
+
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    handlePointerMove(event.clientX, event.clientY);
+  }, [handlePointerMove]);
+
+  const handleMouseUp = useCallback(() => {
+    handlePointerUp();
+  }, [handlePointerUp]);
+
+  // Touch event handlers
+  const handleTouchStart = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    event.preventDefault(); // Prevent scrolling
+    if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      handlePointerDown(touch.clientX, touch.clientY);
+    }
+  }, [handlePointerDown]);
+
+  const handleTouchMove = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    event.preventDefault(); // Prevent scrolling
+    if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      handlePointerMove(touch.clientX, touch.clientY);
+    }
+  }, [handlePointerMove]);
+
+  const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    event.preventDefault();
+    handlePointerUp();
+  }, [handlePointerUp]);
 
   // Apply perspective transform
   const handleApplyTransform = useCallback(async () => {
@@ -250,13 +308,26 @@ export const EdgeDetection = () => {
 
   return (
     <div className="flex flex-col items-center gap-6 w-full">
-      <div className="text-center">
+      <div className="text-center px-4">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
           Adjust Document Edges
         </h2>
-        <p className="text-gray-600">
-          Drag the corner points to match your document edges
+        <p className="text-gray-600 mb-2">
+          Tap and drag the corner points to match your document edges
         </p>
+        <p className="text-sm text-gray-500">
+          Touch and hold each blue circle to move it
+        </p>
+        {selectedCorner && (
+          <div className="mt-3 inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+            </svg>
+            <span className="font-medium">
+              Moving: {selectedCorner.replace(/([A-Z])/g, ' $1').trim()}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="relative w-full max-w-3xl">
@@ -264,29 +335,48 @@ export const EdgeDetection = () => {
           ref={imageRef}
           src={originalImage.url}
           alt="Original"
+          onLoad={() => {
+            console.log('Image loaded successfully');
+            setImageLoaded(true);
+          }}
+          onError={(e) => {
+            console.error('Image failed to load', e);
+            setError('Failed to load image for edge detection');
+          }}
           className="hidden"
         />
+        {!imageLoaded && (
+          <div className="w-full aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading image...</p>
+            </div>
+          </div>
+        )}
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          className="w-full h-auto rounded-lg shadow-lg cursor-crosshair"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className={`w-full h-auto rounded-lg shadow-lg cursor-crosshair touch-none ${!imageLoaded ? 'hidden' : ''}`}
         />
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-md px-4">
         <button
           onClick={handleSkip}
-          className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
+          className="w-full sm:w-auto px-6 py-3 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
         >
           Skip
         </button>
         <button
           onClick={handleApplyTransform}
           disabled={!edges}
-          className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors shadow-lg"
+          className="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors shadow-lg"
         >
           Apply Correction
         </button>

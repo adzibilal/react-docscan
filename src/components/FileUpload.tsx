@@ -78,9 +78,9 @@ export const FileUpload = () => {
             alt="Uploaded preview"
             className="w-full h-auto rounded-lg shadow-lg"
           />
-          <div className="absolute inset-0 bg-green-500/20 rounded-lg flex items-center justify-center">
-            <div className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold">
-              ✓ Image loaded successfully
+          <div className="absolute inset-0 bg-green-500/20 rounded-lg flex items-center justify-center pointer-events-none">
+            <div className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold animate-pulse">
+              ✓ Image loaded - Processing...
             </div>
           </div>
         </div>
