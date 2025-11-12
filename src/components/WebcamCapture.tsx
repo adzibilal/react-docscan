@@ -200,7 +200,7 @@ export const WebcamCapture = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-black z-50">
+    <div className="fixed inset-0 w-screen h-screen bg-black z-50 overflow-hidden -top-8">
       {/* Full screen camera view */}
       <div className="relative w-full h-full">
         <Webcam
@@ -223,9 +223,12 @@ export const WebcamCapture = () => {
         
         {/* Document detected indicator - Floating */}
         {detectedEdges && (
-          <div className="absolute top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-green-500/90 backdrop-blur-sm text-white rounded-full shadow-2xl flex items-center gap-2 animate-pulse">
+          <div 
+            className="absolute left-1/2 transform -translate-x-1/2 px-4 sm:px-6 py-2 sm:py-3 bg-green-500/90 backdrop-blur-sm text-white rounded-full shadow-2xl flex items-center gap-2 animate-pulse z-10"
+            style={{ top: 'max(1rem, env(safe-area-inset-top, 1rem))' }}
+          >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4 sm:w-5 sm:h-5"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -235,19 +238,23 @@ export const WebcamCapture = () => {
                 clipRule="evenodd"
               />
             </svg>
-            <span className="font-semibold text-sm">Document Detected</span>
+            <span className="font-semibold text-xs sm:text-sm">Document Detected</span>
           </div>
         )}
         
         {/* Close button - Floating */}
         <button
           onClick={() => reset()}
-          className="absolute top-6 left-6 p-4 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white rounded-full transition-all shadow-2xl active:scale-95"
+          className="absolute p-3 sm:p-4 bg-black/60 backdrop-blur-sm hover:bg-black/80 active:bg-black/90 text-white rounded-full transition-all shadow-2xl active:scale-95 z-10"
+          style={{ 
+            top: 'max(1rem, env(safe-area-inset-top, 1rem))', 
+            left: 'max(1rem, env(safe-area-inset-left, 1rem))' 
+          }}
           title="Close camera"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="h-5 w-5 sm:h-6 sm:w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -265,12 +272,16 @@ export const WebcamCapture = () => {
         {hasMultipleCameras && (
           <button
             onClick={toggleCamera}
-            className="absolute top-6 right-6 p-4 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white rounded-full transition-all shadow-2xl active:scale-95"
+            className="absolute p-3 sm:p-4 bg-black/60 backdrop-blur-sm hover:bg-black/80 active:bg-black/90 text-white rounded-full transition-all shadow-2xl active:scale-95 z-10"
+            style={{ 
+              top: 'max(1rem, env(safe-area-inset-top, 1rem))', 
+              right: 'max(1rem, env(safe-area-inset-right, 1rem))' 
+            }}
             title="Switch camera"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
+              className="h-5 w-5 sm:h-6 sm:w-6"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -286,19 +297,22 @@ export const WebcamCapture = () => {
         )}
         
         {/* Capture button - Floating at bottom */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+        <div 
+          className="absolute left-0 right-0 flex justify-center px-4 z-10"
+          style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' }}
+        >
           <button
             onClick={captureImage}
-            className={`px-10 py-5 font-bold rounded-full transition-all shadow-2xl backdrop-blur-sm text-white text-lg active:scale-95 ${
+            className={`w-full max-w-xs px-8 sm:px-10 py-4 sm:py-5 font-bold rounded-full transition-all shadow-2xl backdrop-blur-sm text-white text-base sm:text-lg active:scale-95 ${
               detectedEdges
                 ? 'bg-green-600/90 hover:bg-green-700/90 animate-pulse'
                 : 'bg-blue-600/90 hover:bg-blue-700/90'
             }`}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center gap-2 sm:gap-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-7 w-7"
+                className="h-6 w-6 sm:h-7 sm:w-7"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -316,7 +330,7 @@ export const WebcamCapture = () => {
                   d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              {detectedEdges ? 'Capture Document' : 'Capture Photo'}
+              <span className="whitespace-nowrap">{detectedEdges ? 'Capture Document' : 'Capture Photo'}</span>
             </div>
           </button>
         </div>

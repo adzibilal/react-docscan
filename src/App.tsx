@@ -142,6 +142,17 @@ function App() {
     );
   }
 
+  // If on capture step with webcam, render full screen without wrapper
+  if (currentStep === 'capture' && captureMode === 'webcam') {
+    return (
+      <>
+        {renderContent()}
+        {isProcessing && <LoadingSpinner />}
+        {error && <ErrorMessage message={error} onClose={() => setError(null)} />}
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
