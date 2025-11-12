@@ -1,109 +1,178 @@
 # Quick Start Guide
 
-## Installation & Setup
+## 🚀 Running the Application
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### Start Development Server
 
-2. **Start development server:**
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
-3. **Open in browser:**
-   Navigate to `http://localhost:5173`
+The application will be available at `http://localhost:5173`
 
-## How to Use
+**Important**: Camera access requires HTTPS or localhost!
 
-### Step 1: Capture/Upload
-Choose one of two options:
-- **Use Webcam**: Click the button to capture a photo
-- **Upload File**: Drag & drop or browse for an image
+### Build for Production
 
-### Step 2: Edge Detection
-- The app automatically detects document edges
-- Drag the corner points to adjust if needed
-- Click "Apply Correction" to straighten the document
-- Or click "Skip" to proceed without correction
-
-### Step 3: Edit
-Edit your document:
-- **Crop**: Click "Crop" button and adjust the selection
-- **Rotate**: Rotate by 90° or 180°
-- **Adjust**: Use sliders to change brightness and contrast
-- Click "Continue to Export" when done
-
-### Step 4: Export
-- Choose format (JPG or PNG)
-- Adjust quality (for JPG only)
-- Enter a filename
-- Click "Download Image"
-
-## Features
-
-✅ Webcam capture with camera switching  
-✅ File upload with drag & drop  
-✅ Automatic edge detection using OpenCV.js  
-✅ Manual corner adjustment  
-✅ Perspective correction  
-✅ Interactive cropping  
-✅ Image rotation  
-✅ Brightness/contrast adjustment  
-✅ Multiple export formats  
-✅ Responsive design  
-
-## Browser Requirements
-
-- Modern browser with WebRTC support (Chrome, Firefox, Safari, Edge)
-- HTTPS required for webcam in production (localhost works in development)
-- Internet connection for loading jscanify & OpenCV.js (loaded from CDN)
-
-## Troubleshooting
-
-**jscanify/OpenCV not loading?**
-- Wait a few seconds for the libraries to load from CDN
-- Check your internet connection
-- Click "Reload Page" button in the header
-
-**Webcam not working?**
-- Grant camera permissions when prompted
-- Ensure you're on HTTPS (or localhost)
-
-**Edge detection not accurate?**
-- Ensure good lighting
-- Place document on contrasting background
-- Manually adjust corners if needed
-
-## Development
-
-**Build for production:**
 ```bash
 npm run build
 ```
 
-**Preview production build:**
+Build output will be in the `dist/` directory.
+
+### Preview Production Build
+
 ```bash
 npm run preview
 ```
 
-**Type checking:**
+## 📋 How to Use the Document Scanner
+
+### Step-by-Step Instructions:
+
+1. **Wait for OpenCV to Load**
+   - You'll see "Ready" indicator when ready (green badge)
+
+2. **Activate Camera**
+   - Click "Aktifkan Kamera" button
+   - Allow camera access when browser asks for permission
+   - Camera preview will appear with green guide rectangle
+
+3. **Position Your Document**
+   - Place document within the green guide rectangle
+   - Align document with corner markers
+   - Keep document flat and well-lit
+   - Follow the instruction: "Posisikan dokumen dalam frame"
+
+4. **Optional: Enable Live Detection**
+   - Click "Live Detection: OFF" to toggle ON
+   - Yellow outline appears when document is detected
+   - Red dots show detected corners in real-time
+   - This helps you position the document perfectly
+
+5. **Capture Photo**
+   - Click green "Capture" button
+   - Camera stops and shows captured image
+   - App automatically detects document boundaries
+   - You'll see:
+     - Green outline showing the document border
+     - Red dots marking the 4 corners
+     - Numbers (1-4) labeling each corner
+
+6. **Crop the Document**
+   - Click "Crop" button
+   - The app applies perspective transformation
+   - The straightened, cropped document appears on the right
+
+7. **Download or Retake**
+   - Click "Download" button to save as `scanned-document.png`
+   - Click "Retake" to capture another photo
+
+## 💡 Tips for Best Results
+
+### ✅ Good Images:
+- Clear document edges
+- Good lighting
+- High contrast (white paper on dark table)
+- No shadows or glare
+- Entire document visible
+- Flat surface
+
+### ❌ Challenging Images:
+- Complex backgrounds
+- Poor lighting
+- Low contrast
+- Wrinkled or folded documents
+- Partial documents
+- Multiple overlapping documents
+
+## 🎨 Features You'll See
+
+### UI Elements:
+- **Status Badge**: Shows if OpenCV is ready (green) or loading (yellow)
+- **Original Image View**: Your uploaded photo
+- **Detection View**: Image with detected boundaries overlay
+- **Cropped Result**: Final straightened document
+- **Action Buttons**: Control the scanning process
+
+### Visual Feedback:
+- **Green Line**: Detected document border
+- **Red Dots**: Corner points (numbered 1-4)
+- **Processing State**: Buttons disable during processing
+- **Error Messages**: Red alerts for any issues
+
+## 🔧 Troubleshooting
+
+### "Could not detect document boundaries"
+- Try a different image with better contrast
+- Ensure the document has clear edges
+- Use better lighting
+- Try a simpler background
+
+### "OpenCV not found"
+- Check your internet connection (OpenCV loads from CDN)
+- Refresh the page
+- Wait a few seconds for loading
+
+### Slow Performance
+- Use smaller images (resize before uploading)
+- Close other browser tabs
+- Try a more powerful device
+
+## 📱 Mobile Usage
+
+The app works on mobile devices!
+- Use your phone's camera to take photos
+- Same workflow as desktop
+- Responsive design adapts to screen size
+
+## 🎯 Example Use Cases
+
+- **Receipts**: Scan receipts for expense tracking
+- **Documents**: Digitize paper documents
+- **Whiteboards**: Capture whiteboard notes
+- **Books**: Scan book pages
+- **Business Cards**: Digitize business cards
+- **Forms**: Scan filled forms
+
+## 🛠️ Development Scripts
+
 ```bash
+# Start dev server
+npm run dev
+
+# Build for production
 npm run build
+
+# Preview production build
+npm run preview
+
+# Run linter
+npm run lint
 ```
 
-## Tech Stack
+## 📦 What's Included
 
-- React 18 + TypeScript
-- Vite
-- Tailwind CSS v3
-- jscanify (document scanning, uses OpenCV.js)
-- Zustand (state management)
-- react-webcam (webcam access)
-- Cropper.js (image cropping)
+- ✅ React 19 with TypeScript
+- ✅ Vite 7 (fast build tool)
+- ✅ Tailwind CSS v3 (styling)
+- ✅ OpenCV.js 4.8.0 (computer vision)
+- ✅ Modern, responsive UI
+- ✅ Complete error handling
+- ✅ Type-safe implementation
 
----
+## 🌟 Next Steps
+
+After testing the app:
+1. Try different types of documents
+2. Experiment with various lighting conditions
+3. Test on different devices
+4. Consider adding features like:
+   - Manual corner adjustment
+   - Multiple document detection
+   - Batch processing
+   - Image filters (grayscale, contrast)
+   - PDF export
 
 Enjoy scanning! 📄✨
 

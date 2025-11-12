@@ -1,35 +1,33 @@
-# Document Scanner Web App
+# Document Scanner with OpenCV.js
 
-A modern, client-side document scanning application built with React, TypeScript, OpenCV.js, and Tailwind CSS. Scan documents using your webcam or by uploading images, with automatic edge detection, perspective correction, and image editing capabilities.
+A modern web-based document scanner built with React, TypeScript, Vite, and OpenCV.js. This application uses your device camera to scan documents with real-time guidance and automatically detects document boundaries to crop and straighten them.
 
 ## Features
 
-- 📸 **Webcam Capture** - Take photos directly from your device camera
-- 📁 **File Upload** - Upload images from your device (JPG, PNG, HEIC)
-- 🔍 **Auto Edge Detection** - Automatic document boundary detection using OpenCV.js
-- ✂️ **Perspective Correction** - Straighten skewed documents automatically
-- 🎨 **Image Editing** - Crop, rotate, adjust brightness and contrast
-- 💾 **Export** - Download as JPG or PNG with quality control
-- 📱 **Responsive Design** - Works on desktop and mobile devices
-- ⚡ **Client-Side Processing** - No server required, all processing happens in your browser
+- 📹 **Camera Input** - Scan documents directly from your device camera
+- 📐 **Guide Overlay** - Rectangle guide with corner markers for perfect document positioning
+- 🎯 **Live Detection** - Optional real-time document boundary detection while previewing
+- 🔍 **Automatic Document Detection** - Uses OpenCV.js contour detection to find document boundaries
+- 📐 **Perspective Transformation** - Applies warp perspective to crop and straighten documents
+- 🎨 **Modern UI** - Beautiful, responsive interface built with Tailwind CSS v3
+- 📱 **Mobile & Desktop** - Works seamlessly on all devices with camera support
+- 💾 **Download Results** - Save the scanned document as an image file
+- ⚡ **Fast Processing** - 100% client-side processing with no server required
+- 🔒 **Privacy First** - All processing happens in your browser, no data uploaded
 
-## Tech Stack
+## Technologies Used
 
-- **React 18** - UI framework
-- **TypeScript** - Type-safe code
-- **Vite** - Fast build tool
+- **React** - UI framework
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Fast build tool and dev server
+- **OpenCV.js** - Computer vision library for document detection
 - **Tailwind CSS v3** - Utility-first CSS framework
-- **jscanify** - Document scanning library (uses OpenCV.js under the hood)
-- **Zustand** - State management
-- **react-webcam** - Webcam access
-- **Cropper.js** - Image cropping
-- **react-cropper** - React wrapper for Cropper.js
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js (v14 or higher)
 - npm or yarn
 
 ### Installation
@@ -52,158 +50,91 @@ npm run dev
 
 4. Open your browser and navigate to `http://localhost:5173`
 
-### Build for Production
+## How to Use
 
-```bash
-npm run build
-```
+### Camera Scanning Mode (Default)
 
-The built files will be in the `dist` directory.
+1. **Activate Camera** - Click "Aktifkan Kamera" to start the camera
+2. **Position Document** - Place your document within the green guide rectangle
+3. **Optional: Enable Live Detection** - Toggle "Live Detection" to see real-time boundary detection
+4. **Capture** - Press the green "Capture" button when ready
+5. **Review Detection** - The detected corners are shown as numbered red dots with a green outline
+6. **Crop Document** - Click "Crop" to apply perspective correction
+7. **Download or Retake** - Save your scanned document or take another photo
 
-### Preview Production Build
+### Alternative: File Upload Mode
 
-```bash
-npm run preview
-```
+A file upload version is also available in `src/components/DocumentScanner.tsx` if you prefer uploading images instead of using the camera.
 
-## Usage
+## Tips for Best Results
 
-### 1. Capture or Upload
-- **Use Webcam**: Click "Use Webcam" and capture a photo of your document
-- **Upload File**: Click "Upload File" and select an image from your device
+- **Lighting**: Use good lighting, avoid dark environments
+- **Contrast**: White/light documents on dark backgrounds work best
+- **Positioning**: Keep document flat and align with the guide rectangle
+- **Stability**: Hold camera steady while capturing
+- **Full View**: Ensure all four corners of the document are visible
+- **Shadows**: Avoid shadows and reflections
+- **Live Detection**: Use the live detection toggle for real-time feedback
 
-### 2. Detect Edges
-- The app will automatically detect document edges
-- Drag corner points to adjust if needed
-- Click "Apply Correction" to straighten the document
+## Browser Requirements
 
-### 3. Edit
-- **Crop**: Click "Crop" to trim the image
-- **Rotate**: Rotate by 90° or 180°
-- **Adjust**: Fine-tune brightness and contrast
-- Click "Continue to Export" when done
-
-### 4. Export
-- Choose format (JPG or PNG)
-- Adjust quality (for JPG)
-- Enter filename
-- Click "Download Image"
+- **HTTPS or Localhost**: Camera access requires secure context
+- **Modern Browser**: Chrome 53+, Firefox 36+, Safari 11+, Edge 12+
+- **Camera Permission**: You must allow camera access when prompted
 
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── WebcamCapture.tsx      # Webcam capture component
-│   ├── FileUpload.tsx          # File upload with drag & drop
-│   ├── EdgeDetection.tsx       # Edge detection & perspective correction
-│   ├── ImageEditor.tsx         # Crop, rotate, adjust controls
-│   ├── ExportImage.tsx         # Export & download functionality
-│   ├── LoadingSpinner.tsx      # Loading overlay
-│   ├── ErrorMessage.tsx        # Error notification
-│   └── StepIndicator.tsx       # Progress indicator
-├── stores/
-│   └── useAppStore.ts          # Zustand store for app state
+│   ├── CameraScanner.tsx      # Camera-based scanner (main)
+│   └── DocumentScanner.tsx    # File upload version
+├── hooks/
+│   └── useCamera.ts           # Camera management hook
+├── lib/
+│   └── document-scanner.ts    # OpenCV.js document detection logic
 ├── types/
-│   └── index.ts                # TypeScript type definitions
-├── utils/
-│   ├── opencv.ts               # OpenCV helper functions
-│   └── imageProcessing.ts      # Image manipulation utilities
-├── App.tsx                     # Main app component
-├── main.tsx                    # App entry point
-└── index.css                   # Global styles with Tailwind
+│   └── opencv.d.ts            # TypeScript declarations for OpenCV
+├── App.tsx                     # App wrapper (uses CameraScanner)
+├── main.tsx                    # Entry point
+└── index.css                   # Tailwind CSS imports
 ```
 
-## Browser Compatibility
+## Implementation Details
 
-- Chrome/Edge 88+ (recommended)
-- Firefox 90+
-- Safari 14+
-- Opera 74+
+### Document Detection Algorithm
 
-**Note**: Webcam feature requires HTTPS in production or localhost in development.
+1. **Preprocessing**
+   - Convert image to grayscale
+   - Apply Gaussian blur to reduce noise
+   - Apply threshold to create binary image
 
-## Features in Detail
+2. **Contour Detection**
+   - Find all contours in the image
+   - Select the largest contour (assumed to be the document)
 
-### Edge Detection
-Uses **jscanify** library (powered by OpenCV.js) to automatically find document boundaries. The detected corners can be manually adjusted for precision.
+3. **Corner Extraction**
+   - Calculate the minimum area rectangle
+   - Find the four corners by determining the points farthest from the center in each quadrant
 
-**Mobile Support:** Fully touch-enabled with larger touch targets (35px radius) and visual feedback when dragging corners. Works seamlessly on both desktop and mobile devices.
+4. **Perspective Transformation**
+   - Calculate output dimensions based on detected corners
+   - Apply perspective transformation to warp the document to a rectangle
+   - Output the cropped and straightened document
 
-### Perspective Correction
-Uses **jscanify's** perspective transformation to straighten documents that are photographed at an angle, making them appear as if scanned from directly above.
+## Building for Production
 
-### Image Editing
-- **Crop**: Interactive cropping with drag handles
-- **Rotate**: Quick 90° and 180° rotation
-- **Brightness/Contrast**: Slider controls for fine-tuning
+```bash
+npm run build
+```
 
-### Export Options
-- **Format**: JPG (smaller file size) or PNG (lossless quality)
-- **Quality**: Adjustable quality for JPG (10-100%)
-- **Filename**: Custom naming for downloads
-
-## Development
-
-### Code Style
-
-This project follows TypeScript best practices:
-- No `any` types - all types are explicitly defined
-- Functional components with hooks
-- Custom hooks for reusable logic
-- Proper error handling
-
-### State Management
-
-Uses Zustand for simple, efficient state management:
-- Centralized app state
-- Type-safe actions
-- Minimal boilerplate
-
-### Styling
-
-Tailwind CSS v3 for consistent, responsive design:
-- Utility-first approach
-- Custom color scheme
-- Mobile-first responsive design
-- Dark mode ready (can be enabled)
-
-## Performance
-
-- jscanify & OpenCV.js are loaded asynchronously via CDN
-- Images processed entirely client-side
-- No server requests after initial load
-- Optimized for mobile devices
-
-## Troubleshooting
-
-### jscanify/OpenCV not loading
-- Check internet connection (libraries load from CDN)
-- Wait a few moments for the libraries to load
-- Clear browser cache and reload
-- Click "Reload Page" button if edge detection is unavailable
-
-### Webcam not working
-- Grant camera permissions when prompted
-- Use HTTPS in production
-- Check browser compatibility
-
-### Edge detection failing
-- Ensure good lighting
-- Place document on contrasting background
-- Manually adjust corners if auto-detection fails
+The production-ready files will be in the `dist` directory.
 
 ## License
 
 MIT
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 ## Acknowledgments
 
-- [jscanify](https://colonelparrot.github.io/jscanify/) by ColonelParrot - JavaScript document scanning library
-- OpenCV.js for computer vision capabilities
-- Tailwind CSS for styling
-- React team for the amazing framework
+- Implementation based on the tutorial: [Web Document Scanner with OpenCV.js](https://www.dynamsoft.com/codepool/web-document-scanner-with-opencvjs.html)
+- OpenCV.js library from [OpenCV](https://opencv.org/)
