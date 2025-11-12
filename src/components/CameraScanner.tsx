@@ -63,8 +63,10 @@ export default function CameraScanner() {
           
           // Calculate guide rectangle with KTP/ID Card aspect ratio (85.6mm x 53.98mm = 1.586:1)
           const ktpAspectRatio = 1.586; // KTP ratio
-          const maxWidth = canvas.width * 0.85;
-          const maxHeight = canvas.height * 0.6;
+          // Use larger percentage for mobile (responsive)
+          const isMobile = canvas.width < 768;
+          const maxWidth = canvas.width * (isMobile ? 0.90 : 0.85);
+          const maxHeight = canvas.height * (isMobile ? 0.50 : 0.6);
           
           let guideWidth, guideHeight;
           
@@ -94,10 +96,10 @@ export default function CameraScanner() {
           ctx.strokeRect(guideX, guideY, guideWidth, guideHeight);
           ctx.setLineDash([]);
           
-          // Draw corners
-          const cornerSize = 30;
+          // Draw corners with responsive size
+          const cornerSize = isMobile ? 25 : 30;
           ctx.strokeStyle = '#00ff00';
-          ctx.lineWidth = 6;
+          ctx.lineWidth = isMobile ? 4 : 6;
           
           // Top-left corner
           ctx.beginPath();
@@ -148,17 +150,23 @@ export default function CameraScanner() {
             });
           }
           
-          // Add instruction text
+          // Add instruction text with responsive font
+          const fontSize = isMobile ? 16 : 20;
+          const smallFontSize = isMobile ? 12 : 14;
+          
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 20px Arial';
+          ctx.font = `bold ${fontSize}px Arial`;
           ctx.textAlign = 'center';
           ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
           ctx.shadowBlur = 10;
-          ctx.fillText('Posisikan KTP/Dokumen dalam frame', canvas.width / 2, guideY - 20);
+          
+          // Shorter text for mobile
+          const instructionText = isMobile ? 'Posisikan KTP dalam frame' : 'Posisikan KTP/Dokumen dalam frame';
+          ctx.fillText(instructionText, canvas.width / 2, guideY - (isMobile ? 15 : 20));
           
           // Add KTP icon/label at bottom
-          ctx.font = '14px Arial';
-          ctx.fillText('Ratio: Kartu KTP', canvas.width / 2, guideY + guideHeight + 30);
+          ctx.font = `${smallFontSize}px Arial`;
+          ctx.fillText('Ratio: Kartu KTP', canvas.width / 2, guideY + guideHeight + (isMobile ? 25 : 30));
           ctx.shadowBlur = 0;
         }
       }
@@ -354,22 +362,22 @@ export default function CameraScanner() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
-      <div className="bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="bg-white shadow-md sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Document Scanner</h1>
-              <p className="text-sm text-gray-600">Scan dokumen dengan kamera</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Document Scanner</h1>
+              <p className="text-xs sm:text-sm text-gray-600">Scan dokumen dengan kamera</p>
             </div>
             <div>
               {cvReady ? (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-1 sm:mr-2"></span>
                   Ready
                 </span>
               ) : (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></span>
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-yellow-100 text-yellow-800">
+                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1 sm:mr-2 animate-pulse"></span>
                   Loading...
                 </span>
               )}
@@ -378,7 +386,7 @@ export default function CameraScanner() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Error Message */}
         {(error || cameraError) && (
           <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
@@ -388,7 +396,7 @@ export default function CameraScanner() {
 
         {/* Camera View */}
         {!capturedImage && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
             {!isActive ? (
               <div className="text-center py-12">
                 <div className="mb-6">
@@ -409,13 +417,13 @@ export default function CameraScanner() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="relative bg-black rounded-lg overflow-hidden aspect-video flex items-center justify-center">
+                <div className="relative bg-black rounded-lg overflow-hidden w-full" style={{ aspectRatio: '4/3' }}>
                   <video
                     ref={videoRef}
                     autoPlay
                     playsInline
                     muted
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                   <canvas
                     ref={overlayCanvasRef}
@@ -423,33 +431,35 @@ export default function CameraScanner() {
                   />
                 </div>
                 
-                <div className="flex flex-wrap gap-3 justify-center">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
                   <button
                     onClick={handleCapture}
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 flex items-center gap-2"
+                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-3 px-6 sm:px-8 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-base sm:text-lg"
                   >
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Capture
                   </button>
                   
-                  <button
-                    onClick={() => setLiveDetection(!liveDetection)}
-                    className={`${
-                      liveDetection ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-blue-600 hover:bg-blue-700'
-                    } text-white font-semibold py-3 px-6 rounded-lg transition duration-200`}
-                  >
-                    {liveDetection ? 'Live Detection: ON' : 'Live Detection: OFF'}
-                  </button>
-                  
-                  <button
-                    onClick={stopCamera}
-                    className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
-                  >
-                    Stop
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setLiveDetection(!liveDetection)}
+                      className={`${
+                        liveDetection ? 'bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
+                      } text-white font-semibold py-3 px-4 sm:px-6 rounded-lg transition duration-200 flex-1 sm:flex-initial text-sm sm:text-base`}
+                    >
+                      {liveDetection ? 'Live: ON' : 'Live: OFF'}
+                    </button>
+                    
+                    <button
+                      onClick={stopCamera}
+                      className="bg-gray-600 hover:bg-gray-700 active:bg-gray-800 text-white font-semibold py-3 px-4 sm:px-6 rounded-lg transition duration-200 text-sm sm:text-base"
+                    >
+                      Stop
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -458,9 +468,9 @@ export default function CameraScanner() {
 
         {/* Captured Image Processing */}
         {capturedImage && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Original/Detection View */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
                 {detectedPoints.length === 4 ? 'Detected Boundaries' : 'Captured Image'}
               </h2>
@@ -512,7 +522,7 @@ export default function CameraScanner() {
 
             {/* Cropped Result */}
             {croppedImage && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">
                   Scanned Document
                 </h2>
